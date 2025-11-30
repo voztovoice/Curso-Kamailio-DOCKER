@@ -178,7 +178,7 @@ RUN dnf install -y epel-release && \
     # Compilación
     gcc gcc-c++ make bison flex \
     # Librerías
-    openssl-devel libcurl-devel \
+    openssl-devel curl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
     libxml2-devel libunistring-devel \
@@ -250,12 +250,18 @@ ARG KAMAILIO_VERSION=6.0
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-    gcc gcc-c++ make bison flex git \
+    # Compilación
+    gcc gcc-c++ make bison flex \
+    # Librerías
     openssl-devel curl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
     libxml2-devel libunistring-devel \
-    json-c-devel libevent-devel
+    json-c-devel libevent-devel \
+    # Utilidades
+    git wget vim net-tools \
+    # Limpiar cache
+    && dnf clean all
 
 # Compilar Kamailio
 WORKDIR /usr/local/src
@@ -279,7 +285,7 @@ LABEL description="Kamailio 6.0.x SIP Server - Optimized"
 # Instalar solo dependencias de runtime (más liviano)
 RUN dnf install -y epel-release && \
     dnf install -y \
-    openssl libcurl mysql-libs postgresql-libs \
+    openssl curl mysql-libs postgresql-libs \
     pcre expat libxml2 libunistring json-c libevent \
     net-tools procps-ng && \
     dnf clean all
