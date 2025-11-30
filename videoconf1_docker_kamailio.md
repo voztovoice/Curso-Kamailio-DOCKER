@@ -251,7 +251,7 @@ RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
     gcc gcc-c++ make bison flex git \
-    openssl-devel libcurl-devel \
+    openssl-devel curl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
     libxml2-devel libunistring-devel \
