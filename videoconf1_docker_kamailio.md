@@ -173,6 +173,7 @@ ARG KAMAILIO_BUILD=kamailio60
 
 # Instalar dependencias
 RUN dnf install -y epel-release && \
+    dnf config-manager --set-enabled crb && \
     dnf install -y \
     # Compilación
     gcc gcc-c++ make bison flex \
