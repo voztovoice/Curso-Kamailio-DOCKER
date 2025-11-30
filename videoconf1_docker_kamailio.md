@@ -175,17 +175,13 @@ ARG KAMAILIO_BUILD=kamailio60
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-    # Compilación
     gcc gcc-c++ make bison flex \
-    # Librerías
     openssl-devel curl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
     libxml2-devel libunistring-devel \
     json-c-devel libevent-devel \
-    # Utilidades
     git wget vim net-tools \
-    # Limpiar cache
     && dnf clean all
 
 # Crear usuario kamailio
@@ -197,14 +193,14 @@ WORKDIR /usr/local/src
 RUN git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio/kamailio.git kamailio && \
     cd kamailio && \
     make cfg && \
-    # Incluir módulos importantes
+    # Incluir modulos importantes
     make include_modules="db_mysql db_postgres tls websocket dmq presence presence_xml debugger htable pike \
                           dispatcher dialog nathelper rtpengine usrloc registrar auth auth_db \
                           sanity textops siputils tm sl rr maxfwd jsonrpcs xlog corex" \
     cfg && \
     make all && \
     make install && \
-    # Limpiar archivos de compilación
+    # Limpiar archivos de compilacion
     cd .. && rm -rf kamailio
 
 # Crear directorios necesarios
@@ -213,7 +209,7 @@ RUN mkdir -p /etc/kamailio \
     /var/log/kamailio && \
     chown -R kamailio:kamailio /var/run/kamailio /var/log/kamailio
 
-# Copiar configuración básica (será reemplazada por volume)
+# Copiar configuracion básica (será reemplazada por volume)
 COPY kamailio.cfg /etc/kamailio/kamailio.cfg
 RUN chown kamailio:kamailio /etc/kamailio/kamailio.cfg
 
@@ -246,21 +242,17 @@ FROM almalinux:9 AS builder
 
 ARG KAMAILIO_VERSION=6.0
 
-# Instalar dependencias de compilación
+# Instalar dependencias
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-    # Compilación
     gcc gcc-c++ make bison flex \
-    # Librerías
     openssl-devel curl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
     libxml2-devel libunistring-devel \
     json-c-devel libevent-devel \
-    # Utilidades
     git wget vim net-tools \
-    # Limpiar cache
     && dnf clean all
 
 # Compilar Kamailio
@@ -319,10 +311,10 @@ CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"
 ### 3.3 Construir la imagen
 
 ```bash
-# Construcción básica
+# Construccion básica
 docker build -f Dockerfile.kamailio -t mi-kamailio:6.0 .
 
-# Construcción optimizada
+# Construccion optimizada
 docker build -f Dockerfile.kamailio-optimized -t mi-kamailio:6.0-optimized .
 
 # Con argumentos personalizados
