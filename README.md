@@ -305,7 +305,7 @@ docker logs mariadb
 
 ### Durante el curso:
 - **Foro:** Campus Virtual Mesa Proyectos
-- **Email:** soporte@mesaproyectos.com
+- **Email:** campus@mesaproyectos.com
 - **Chat:** Disponible durante videoconferencias
 
 ### Recursos adicionales:
