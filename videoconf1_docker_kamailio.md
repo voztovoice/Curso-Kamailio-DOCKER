@@ -285,7 +285,7 @@ LABEL description="Kamailio 6.0.x SIP Server - Optimized"
 # Instalar solo dependencias de runtime (más liviano)
 RUN dnf install -y epel-release && \
     dnf install -y \
-    openssl curl mysql-libs postgresql-libs \
+    openssl mysql-libs postgresql-libs \
     pcre expat libxml2 libunistring json-c libevent \
     net-tools procps-ng && \
     dnf clean all
