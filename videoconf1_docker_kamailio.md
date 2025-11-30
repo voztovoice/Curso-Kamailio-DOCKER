@@ -350,7 +350,6 @@ tcp_children=4
 
 # Escuchar en todas las interfaces
 listen=udp:0.0.0.0:5060
-listen=tcp:0.0.0.0:5060
 
 # Alias (será configurado por variable de entorno)
 alias="kamailio.local"
@@ -377,6 +376,8 @@ loadmodule "ctl.so"
 loadmodule "cfg_rpc.so"
 loadmodule "nathelper.so"
 loadmodule "rtpengine.so"
+
+modparam("nathelper|registrar", "received_avp", "$avp(RECEIVED)")
 
 ####### Routing Logic ########
 request_route {
