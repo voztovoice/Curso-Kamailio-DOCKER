@@ -248,6 +248,7 @@ ARG KAMAILIO_VERSION=6.0
 
 # Instalar dependencias de compilación
 RUN dnf install -y epel-release && \
+    dnf config-manager --set-enabled crb && \
     dnf install -y \
     gcc gcc-c++ make bison flex git \
     openssl-devel libcurl-devel \
