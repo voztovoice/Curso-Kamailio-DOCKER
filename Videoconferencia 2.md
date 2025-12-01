@@ -79,25 +79,25 @@ Al finalizar podrás:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    DOCKER HOST                       │
-│                                                      │
-│  ┌────────────────────────────────────────────┐    │
-│  │  Kernel Module: xt_RTPENGINE              │    │
-│  │  (cargado en host, compartido)            │    │
-│  │  /proc/rtpengine/control                  │    │
-│  └────────────────────────────────────────────┘    │
-│                     ▲                                │
+│                    DOCKER HOST                      │
+│                                                     │
+│  ┌────────────────────────────────────────────┐     │
+│  │  Kernel Module: xt_RTPENGINE               │     │
+│  │  (cargado en host, compartido)             │     │
+│  │  /proc/rtpengine/control                   │     │
+│  └────────────────────────────────────────────┘     │
+│                     ▲                               │
 │                     │ (acceso compartido)           │
-│  ┌──────────────┐  │  ┌──────────────┐  ┌────────┐│
-│  │ RTPEngine #1 ├──┘  │ RTPEngine #2 ├──┤RTPEng#3││
-│  │ Table ID: 0  │     │ Table ID: 1  │  │Table: 2││
-│  │ Port: 22222  │     │ Port: 22223  │  │Port:224││
-│  │ RTP:10k-15k  │     │ RTP:15k-20k  │  │RTP:20-2││
-│  └──────────────┘     └──────────────┘  └────────┘│
+│  ┌──────────────┐  │  ┌──────────────┐  ┌────────┐  │
+│  │ RTPEngine #1 ├──┘  │ RTPEngine #2 ├──┤RTPEng#3│  │
+│  │ Table ID: 0  │     │ Table ID: 1  │  │Table: 2│  │
+│  │ Port: 22222  │     │ Port: 22223  │  │Port:224│  │
+│  │ RTP:10k-15k  │     │ RTP:15k-20k  │  │RTP:20-2│  │
+│  └──────────────┘     └──────────────┘  └────────┘  │
 │         ▲                   ▲                ▲      │
 │         │                   │                │      │
 │         └───────────────────┴────────────────┘      │
-│                             │                        │
+│                             │                       │
 │                      ┌──────────────┐               │
 │                      │  Kamailio    │               │
 │                      │  Dispatcher  │               │
