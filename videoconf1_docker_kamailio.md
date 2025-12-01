@@ -556,6 +556,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.kamailio-optimized
+    command: ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
     container_name: kamailio-server
     hostname: kamailio.local
     restart: unless-stopped
