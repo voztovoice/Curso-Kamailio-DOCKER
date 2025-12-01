@@ -1,4 +1,4 @@
-# VIDEOCONFERENCIA 3 - CONTENIDO DOCKER
+# VIDEOCONFERENCIA 3
 ## Arquitectura de Microservicios VoIP y Balanceo con Contenedores
 
 ---
