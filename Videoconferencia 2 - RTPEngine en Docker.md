@@ -52,7 +52,7 @@
 │  │ RTPEngine #1 │  │ RTPEngine #2 │  │ RTPEng #3│   │
 │  │ Table ID: 0  │  │ Table ID: 1  │  │ Table: 2 │   │
 │  │ Port: 22222  │  │ Port: 22223  │  │ Port:2224│   │
-│  │ RTP:10k-15k  │  │ RTP:15k-20k  │  │ RTP:20-25│   │
+│  │ RTP:10k-15k  │  │ RTP:15k-20k  │  |RTP:20-25k│   │
 │  └──────────────┘  └──────────────┘  └──────────┘   │
 │         ▲                 ▲                ▲        │
 │         │                 │                │        │
@@ -77,10 +77,10 @@
 # ETAPA 1: Builder
 FROM almalinux:9 AS builder
 
-# Instalar dependencias de compilación
+# Instalar dependencias de compilacion
 RUN dnf install -y epel-release && \
     dnf install -y \
-    # Compilación
+    # Compilacion
     gcc gcc-c++ make pkgconfig redhat-rpm-config \
     # Dependencias RTPEngine
     glib2-devel zlib-devel openssl-devel \
@@ -134,14 +134,14 @@ RUN groupadd -r rtpengine && \
     mkdir -p /var/run/rtpengine /var/log/rtpengine && \
     chown -R rtpengine:rtpengine /var/run/rtpengine /var/log/rtpengine
 
-# Crear archivo de configuración por defecto
+# Crear archivo de configuracion por defecto
 RUN mkdir -p /etc/rtpengine
 
 # Script de inicio
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Volúmenes
+# Volumenes
 VOLUME ["/etc/rtpengine", "/var/log/rtpengine"]
 
 # Puertos
@@ -177,19 +177,19 @@ CMD ["rtpengine"]
 #!/bin/bash
 set -e
 
-# Función para logging
+# Funcion para logging
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"
 }
 
-# Verificar que el módulo del kernel esté cargado en el host
+# Verificar que el modulo del kernel este cargado en el host
 if [ ! -f /proc/rtpengine/control ]; then
     log "WARNING: Kernel module xt_RTPENGINE not loaded on host!"
     log "Please run on host: modprobe xt_RTPENGINE"
     log "Continuing without kernel forwarding (user-space only)..."
 fi
 
-# Configurar parámetros por defecto si no están definidos
+# Configurar parametros por defecto si no estan definidos
 RTPE_INTERFACE=${RTPE_INTERFACE:-enp1s0}
 RTPE_LISTEN_NG=${RTPE_LISTEN_NG:-22222}
 RTPE_TABLE=${RTPE_TABLE:-0}
@@ -213,12 +213,12 @@ ARGS="$ARGS --recording-dir=${RTPE_RECORDING_DIR}"
 ARGS="$ARGS --recording-method=proc"
 ARGS="$ARGS --log-stderr"
 
-# Codec transcoding (si está habilitado)
+# Codec transcoding (si esta habilitado)
 if [ "${RTPE_TRANSCODING}" = "yes" ]; then
     ARGS="$ARGS --codec-transcoding=always"
 fi
 
-# Redis (si está configurado)
+# Redis (si esta configurado)
 if [ -n "${RTPE_REDIS}" ]; then
     ARGS="$ARGS --redis=${RTPE_REDIS}"
     ARGS="$ARGS --redis-db=${RTPE_REDIS_DB}"
@@ -240,7 +240,7 @@ log "  Log Level: ${RTPE_LOG_LEVEL}"
 exec /usr/local/bin/rtpengine --foreground $ARGS
 ```
 
-### 2.3 Configuración alternativa (archivo rtpengine.conf)
+### 2.3 Configuracion alternativa (archivo rtpengine.conf)
 
 **Archivo: `config/rtpengine.conf`**
 
@@ -304,7 +304,6 @@ num-threads = 4
 **Archivo: `docker-compose-rtpengine.yml`**
 
 ```yaml
-version: '3.8'
 
 services:
   # RTPEngine Instancia 1
@@ -457,8 +456,6 @@ volumes:
 **Archivo: `docker-compose-rtpengine-bridge.yml`**
 
 ```yaml
-version: '3.8'
-
 services:
   rtpengine-1:
     build:
@@ -541,8 +538,6 @@ networks:
 **Archivo: `docker-compose-full.yml`**
 
 ```yaml
-version: '3.8'
-
 services:
   # Base de datos
   mariadb:
@@ -1101,6 +1096,6 @@ chmod +x monitor.sh
 
 ---
 
-**FIN VIDEOCONFERENCIA 2 - PARTE DOCKER**
+**FIN VIDEOCONFERENCIA 2**
 
 **Próxima sesión:** Arquitectura de microservicios y balanceo con contenedores
