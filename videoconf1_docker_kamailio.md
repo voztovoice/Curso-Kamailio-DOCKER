@@ -167,7 +167,7 @@ LABEL maintainer="campus@mesaproyectos.com"
 LABEL description="Kamailio 6.0.x SIP Server"
 LABEL version="1.0"
 
-# Variables de construcción
+# Variables de construccion
 ARG KAMAILIO_VERSION=6.0
 ARG KAMAILIO_BUILD=kamailio60
 
@@ -209,7 +209,7 @@ RUN mkdir -p /etc/kamailio \
     /var/log/kamailio && \
     chown -R kamailio:kamailio /var/run/kamailio /var/log/kamailio
 
-# Copiar configuracion básica (será reemplazada por volume)
+# Copiar configuracion básica (sera reemplazada por volume)
 COPY kamailio.cfg /etc/kamailio/kamailio.cfg
 RUN chown kamailio:kamailio /etc/kamailio/kamailio.cfg
 
@@ -274,7 +274,7 @@ FROM almalinux:9
 LABEL maintainer="campus@mesaproyectos.com"
 LABEL description="Kamailio 6.0.x SIP Server - Optimized"
 
-# Instalar solo dependencias de runtime (más liviano)
+# Instalar solo dependencias de runtime (mas liviano)
 RUN dnf install -y epel-release && \
     dnf install -y \
     openssl mysql-libs postgresql-libs \
@@ -293,7 +293,7 @@ RUN useradd -r -s /bin/false kamailio && \
     mkdir -p /etc/kamailio /var/run/kamailio /var/log/kamailio && \
     chown -R kamailio:kamailio /var/run/kamailio /var/log/kamailio
 
-# Volúmenes
+# Volumenes
 VOLUME ["/etc/kamailio", "/var/log/kamailio"]
 
 # Puertos
@@ -311,7 +311,7 @@ CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"
 ### 3.3 Construir la imagen
 
 ```bash
-# Construccion básica
+# Construccion basica
 docker build -f Dockerfile.kamailio -t mi-kamailio:6.0 .
 
 # Construccion optimizada
@@ -323,7 +323,7 @@ docker build \
     -t mi-kamailio:6.0-custom \
     -f Dockerfile.kamailio .
 
-# Ver imágenes creadas
+# Ver imagenes creadas
 docker images | grep kamailio
 
 # Ver tamaño de imagen
@@ -397,12 +397,12 @@ request_route {
         exit;
     }
     
-    # Record routing para diálogos
+    # Record routing para dialogos
     if (is_method("INVITE|SUBSCRIBE")) {
         record_route();
     }
     
-    # Handle requests dentro de diálogos
+    # Handle requests dentro de dialogos
     if (has_totag()) {
         if (loose_route()) {
             route(NATMANAGE);
@@ -457,8 +457,6 @@ route[NATMANAGE] {
 **Archivo: `docker-compose.yml`**
 
 ```yaml
-version: '3.8'
-
 services:
   kamailio:
     build:
@@ -473,7 +471,7 @@ services:
     network_mode: host
     
     volumes:
-      # Configuración persistente
+      # Configuracion persistente
       - ./config/kamailio.cfg:/etc/kamailio/kamailio.cfg:ro
       - ./config/kamctlrc:/etc/kamailio/kamctlrc:ro
       # Logs persistentes
@@ -549,7 +547,6 @@ networks:
 **Archivo: `docker-compose-bridge.yml`**
 
 ```yaml
-version: '3.8'
 
 services:
   kamailio:
@@ -572,7 +569,7 @@ services:
       - "5061:5061/tcp"
       # HTTP/JSONRPC
       - "8080:8080/tcp"
-      # RTP range (ejemplo reducido, en producción ampliar)
+      # RTP range (ejemplo reducido, en produccion ampliar)
       - "10000-10100:10000-10100/udp"
     
     volumes:
@@ -661,12 +658,18 @@ MARIADB_VERSION=10.11
 ### 4.4 Comandos Docker Compose
 
 ```bash
-# Levantar servicios
+# Levantar servicios si el archivo de docker tiene el nombre estandar docker-compose.yml
 docker compose up -d
+# sino
+docker compose -f nombrearchivodocker up -d
 
 # Ver logs
 docker compose logs -f kamailio
+# o
+docker compose -f nombrearchivodocker logs kamailio
 docker compose logs -f mariadb
+# o
+docker compose -f nombrearchivodocker logs mariadb
 
 # Ver estado
 docker compose ps
@@ -676,9 +679,13 @@ docker compose stop
 
 # Detener y eliminar contenedores
 docker compose down
+# o
+docker compose -f nombrearchivodocker down
 
 # Detener, eliminar contenedores y volumes
 docker compose down -v
+# o
+docker compose -f nombrearchivodocker down -v
 
 # Reconstruir imágenes
 docker compose build --no-cache
