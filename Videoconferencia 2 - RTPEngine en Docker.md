@@ -417,9 +417,11 @@ chmod +x docker-entrypoint.sh
 **Archivo: `.env`**
 
 ```bash
-# Interfaz de red (ajustar según tu sistema)
+cat > .env <<EOF
+
+# Interfaz de red (ajustar segun tu sistema)
 # Usa: ip a  para ver tus interfaces
-RTPE_INTERFACE=eth0
+RTPE_INTERFACE=$(curl -s https://icanhazip.com)
 
 # Timezone
 TZ=America/Bogota
@@ -430,6 +432,10 @@ TZ=America/Bogota
 
 # Transcoding (opcional)
 # RTPE_TRANSCODING=yes
+EOF
+
+# cambiar los permisos del archivo
+chmod 600 .env
 ```
 
 ---
