@@ -113,13 +113,52 @@ Al finalizar podrás:
 
 ---
 
-## PARTE 2: PREPARAR EL HOST - MÓDULO KERNEL (15 minutos)
+## PARTE 2: PREPARACIÓN - ESTRUCTURA DE DIRECTORIOS (5 minutos)
+
+### 2.1 Crear estructura del proyecto
+
+**IMPORTANTE: Hacer esto ANTES de crear Dockerfiles**
+
+```bash
+# Crear estructura completa
+mkdir -p ~/rtpengine-docker/{config,logs,scripts,recordings}
+cd ~/rtpengine-docker
+
+# Crear subdirectorios para logs de cada instancia
+mkdir -p logs/{rtpengine-1,rtpengine-2,rtpengine-3}
+
+# Verificar estructura
+tree -L 2
+```
+
+**Estructura esperada:**
+```
+rtpengine-docker/
+├── config/              # Archivos de configuración
+│   └── rtpengine.conf
+├── logs/                # Logs persistentes
+│   ├── rtpengine-1/
+│   ├── rtpengine-2/
+│   └── rtpengine-3/
+├── scripts/             # Scripts de utilidad
+│   ├── load-rtpengine-module.sh
+│   └── check-kernel-module.sh
+├── recordings/          # Grabaciones de llamadas
+├── Dockerfile.rtpengine
+├── docker-entrypoint.sh
+├── docker-compose.yml
+└── .env
+```
+
+---
+
+## PARTE 3: PREPARAR EL HOST - MÓDULO KERNEL (15 minutos)
 
 ### ⚠️ CRÍTICO: Este paso es OBLIGATORIO antes de crear contenedores
 
 El módulo `xt_RTPENGINE` debe cargarse en el **HOST**, no en los contenedores. Sin este módulo, RTPEngine funcionará en modo user-space (más lento).
 
-### 2.1 Instalar dependencias en el host
+### 3.1 Instalar dependencias en el host
 
 ```bash
 # Instalar kernel headers (necesarios para compilar/cargar módulos)
@@ -132,7 +171,7 @@ sudo dnf install -y gcc make elfutils-libelf-devel
 uname -r
 ```
 
-### 2.2 Script para cargar el módulo
+### 3.2 Script para cargar el módulo
 
 **Archivo: `scripts/load-rtpengine-module.sh`**
 
@@ -207,7 +246,7 @@ echo -e "\n${GREEN}Module setup complete!${NC}"
 echo "You can now start RTPEngine containers."
 ```
 
-### 2.3 Cargar el módulo
+### 3.3 Cargar el módulo
 
 ```bash
 # Hacer ejecutable
@@ -231,7 +270,7 @@ dr-xr-xr-x. XX root root 0 Nov 30 09:00 ..
 -rw-r--r--.  1 root root 0 Nov 30 10:00 control
 ```
 
-### 2.4 Persistir el módulo en reinicio
+### 3.4 Persistir el módulo en reinicio
 
 Para que el módulo se cargue automáticamente al reiniciar:
 
@@ -245,7 +284,7 @@ sudo bash -c 'echo "xt_RTPENGINE" > /etc/modules-load.d/rtpengine.conf'
 cat /etc/modules-load.d/rtpengine.conf
 ```
 
-### 2.5 Script de verificación
+### 3.5 Script de verificación
 
 **Archivo: `scripts/check-kernel-module.sh`**
 
@@ -284,45 +323,6 @@ else
 fi
 
 echo -e "\n✓ Kernel module is ready for use!"
-```
-
----
-
-## PARTE 3: PREPARACIÓN - ESTRUCTURA DE DIRECTORIOS (5 minutos)
-
-### 3.1 Crear estructura del proyecto
-
-**IMPORTANTE: Hacer esto ANTES de crear Dockerfiles**
-
-```bash
-# Crear estructura completa
-mkdir -p ~/rtpengine-docker/{config,logs,scripts,recordings}
-cd ~/rtpengine-docker
-
-# Crear subdirectorios para logs de cada instancia
-mkdir -p logs/{rtpengine-1,rtpengine-2,rtpengine-3}
-
-# Verificar estructura
-tree -L 2
-```
-
-**Estructura esperada:**
-```
-rtpengine-docker/
-├── config/              # Archivos de configuración
-│   └── rtpengine.conf
-├── logs/                # Logs persistentes
-│   ├── rtpengine-1/
-│   ├── rtpengine-2/
-│   └── rtpengine-3/
-├── scripts/             # Scripts de utilidad
-│   ├── load-rtpengine-module.sh
-│   └── check-kernel-module.sh
-├── recordings/          # Grabaciones de llamadas
-├── Dockerfile.rtpengine
-├── docker-entrypoint.sh
-├── docker-compose.yml
-└── .env
 ```
 
 ---
