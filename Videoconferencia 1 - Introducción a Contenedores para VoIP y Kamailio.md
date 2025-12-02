@@ -69,6 +69,9 @@ TZ=America/Bogota
 # Actualizar sistema
 sudo dnf update -y
 
+# Reiniciar
+reboot
+
 # Instalar dependencias
 sudo dnf install -y yum-utils device-mapper-persistent-data lvm2
 
