@@ -1,4 +1,4 @@
-# VIDEOCONFERENCIA 2 - CONTENIDO DOCKER
+# VIDEOCONFERENCIA 2
 ## RTPEngine en Docker - Multi-instancia y Configuración Avanzada
 
 ---
