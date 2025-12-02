@@ -11,8 +11,8 @@ Este material está organizado siguiendo el **orden lógico de ejecución**. Cad
 
 ```
 1. Introducción y arquitectura (teoría)
-2. Preparar el HOST (cargar módulo kernel) ← CRÍTICO
-3. Crear estructura de directorios
+2. Crear estructura de directorios
+3. Preparar el HOST (cargar módulo kernel) ← CRÍTICO
 4. Crear archivos de configuración
 5. Crear Dockerfile y scripts
 6. Construir imágenes Docker
