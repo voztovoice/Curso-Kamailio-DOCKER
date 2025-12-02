@@ -13,7 +13,19 @@
 - **Dockerfile**: Receta para construir una imagen
 - **Volume**: Almacenamiento persistente fuera del contenedor
 - **Network**: Red virtual para comunicación entre contenedores
+# Interfaz de red (ajustar segun tu sistema)
+# Usa: ip a  para ver tus interfaces
+RTPE_INTERFACE=$(curl -s https://icanhazip.com)
 
+# Timezone
+TZ=America/Bogota
+
+# Redis (opcional, para HA)
+# RTPE_REDIS=redis:6379
+# RTPE_REDIS_DB=0
+
+# Transcoding (opcional)
+# RTPE_TRANSCODING=yes
 **Ventajas para aplicaciones VoIP:**
 ```
 ✅ Portabilidad: "Funciona en mi máquina" = Funciona en todas
@@ -506,8 +518,7 @@ KAMAILIO_VERSION=6.0
 MARIADB_VERSION=10.11
 EOF
 
-Luego:
-
+# Cambiar los permisos del archivo
 chmod 600 .env
 
 ```
