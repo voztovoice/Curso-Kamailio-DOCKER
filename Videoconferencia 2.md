@@ -169,6 +169,9 @@ sudo dnf install -y gcc make elfutils-libelf-devel
 
 # Verificar versión del kernel
 uname -r
+
+# Entrar en la carpeta de trabajo
+cd rtpengine-docker
 ```
 
 ### 3.2 Script para cargar el módulo
