@@ -432,55 +432,6 @@ TZ=America/Bogota
 # RTPE_TRANSCODING=yes
 ```
 
-### 4.3 Configuración alternativa (archivo rtpengine.conf)
-
-**Archivo: `config/rtpengine.conf` (opcional)**
-
-Este archivo es una alternativa al uso de variables de entorno en el entrypoint.
-
-```ini
-[rtpengine]
-# Interface configuration
-interface = eth0
-
-# Listening ports
-listen-ng = 22222
-
-# Port range for RTP/RTCP
-port-min = 10000
-port-max = 20000
-
-# Kernel table (for xt_RTPENGINE forwarding)
-table = 0
-
-# Timeout values (in seconds)
-timeout = 60
-silent-timeout = 3600
-final-timeout = 10800
-
-# Recording
-recording-dir = /var/spool/rtpengine
-recording-method = proc
-recording-format = pcap
-
-# Logging
-log-level = 6
-log-facility = local1
-log-stderr = yes
-
-# Performance
-num-threads = 4
-delete-delay = 30
-
-# Redis (optional, for HA)
-# redis = redis:6379
-# redis-db = 0
-# no-redis-required = false
-
-# DTLS
-# dtls-passive = yes
-```
-
 ---
 
 ## PARTE 5: DOCKERFILE PARA RTPENGINE (15 minutos)
