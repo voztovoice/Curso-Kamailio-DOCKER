@@ -539,6 +539,13 @@ chmod 600 .env
 services:
   kamailio:
     image: mi-kamailio:6.0-optimized
+    command: >
+      /usr/local/sbin/kamailio
+      -DD
+      -E
+      -A PUBLIC_IP=${KAMAILIO_EXTERNAL_IP}
+      -A DOMAIN=${KAMAILIO_DOMAIN}
+      -f /etc/kamailio/kamailio.cfg
     container_name: kamailio-server
     hostname: kamailio
     restart: unless-stopped
@@ -617,7 +624,13 @@ networks:
 services:
   kamailio:
     image: mi-kamailio:6.0-optimized
-    command: ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
+    command: >
+      /usr/local/sbin/kamailio
+      -DD
+      -E
+      -A PUBLIC_IP=${KAMAILIO_EXTERNAL_IP}
+      -A DOMAIN=${KAMAILIO_DOMAIN}
+      -f /etc/kamailio/kamailio.cfg
     container_name: kamailio-server
     hostname: kamailio.local
     restart: unless-stopped
