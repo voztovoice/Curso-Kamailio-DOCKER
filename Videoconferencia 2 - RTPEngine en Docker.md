@@ -452,19 +452,20 @@ chmod 600 .env
 # ETAPA 1: Builder
 FROM almalinux:9 AS builder
 
-# Instalar dependencias de compilación
 RUN dnf install -y epel-release && \
-    dnf install -y \
-    # Compilación
+    dnf config-manager --set-enabled crb && \
+    dnf install -y  mysql-devel libatomic \
     gcc gcc-c++ make pkgconfig redhat-rpm-config \
     # Dependencias RTPEngine
     glib2-devel zlib-devel openssl-devel \
     pcre-devel libcurl-devel xmlrpc-c-devel \
     hiredis-devel json-glib-devel libevent-devel \
-    iptables-devel libpcap-devel mariadb-devel \
+    iptables-devel libpcap-devel \
     gperf perl-IPC-Cmd \
     # Herramientas
-    git wget
+    git wget perl \
+    libavcodec-free-devel libavfilter-free-devel pandoc iptables-legacy-devel libmnl-devel libnftnl-devel \
+    libwebsockets-devel ncurses-devel opus-devel spandsp-devel libjwt-devel
 
 # Clonar y compilar RTPEngine
 WORKDIR /usr/local/src
@@ -472,12 +473,6 @@ RUN git clone https://github.com/sipwise/rtpengine.git && \
     cd rtpengine && \
     # Compilar daemon
     cd daemon && \
-    make && \
-    # Compilar kernel module (solo source, se carga en host)
-    cd ../kernel-module && \
-    make && \
-    # Compilar utils
-    cd ../utils && \
     make
 
 # ETAPA 2: Runtime
@@ -489,11 +484,13 @@ LABEL version="1.0"
 
 # Instalar solo dependencias de runtime
 RUN dnf install -y epel-release && \
+    dnf config-manager --set-enabled crb && \
     dnf install -y \
-    glib2 zlib openssl pcre libcurl \
+    glib2 zlib openssl pcre libwebsockets libnftnl mysql-libs libatomic \
     xmlrpc-c hiredis json-glib libevent \
-    iptables libpcap mariadb-connector-c \
-    kmod iproute net-tools procps-ng && \
+    iptables libpcap mariadb-connector-c ladspa \
+    kmod iproute net-tools procps-ng rubberband \
+    libavcodec-free libavfilter-free opus spandsp ncurses libavformat-free && \
     dnf clean all
 
 # Copiar binarios compilados
@@ -501,23 +498,18 @@ COPY --from=builder /usr/local/src/rtpengine/daemon/rtpengine /usr/local/bin/
 COPY --from=builder /usr/local/src/rtpengine/utils/rtpengine-ctl /usr/local/bin/
 COPY --from=builder /usr/local/src/rtpengine/utils/rtpengine-ng-client /usr/local/bin/
 
-# Kernel module (para referencia, debe cargarse en host)
-COPY --from=builder /usr/local/src/rtpengine/kernel-module/xt_RTPENGINE.ko /opt/
-
 # Crear usuario rtpengine
 RUN groupadd -r rtpengine && \
     useradd -r -g rtpengine -s /sbin/nologin rtpengine && \
     mkdir -p /var/run/rtpengine /var/log/rtpengine /var/spool/rtpengine && \
     chown -R rtpengine:rtpengine /var/run/rtpengine /var/log/rtpengine /var/spool/rtpengine
 
-# Crear directorio de configuración
 RUN mkdir -p /etc/rtpengine
 
 # Copiar script de inicio
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Volúmenes
 VOLUME ["/etc/rtpengine", "/var/log/rtpengine", "/var/spool/rtpengine"]
 
 # Puertos
@@ -548,7 +540,7 @@ CMD ["rtpengine"]
 
 ```bash
 # Construir imagen
-docker build -f Dockerfile.rtpengine -t rtpengine:latest .
+docker build -f Dockerfile.rtpengine -t rtpengine:mesa .
 
 # Verificar imagen creada
 docker images | grep rtpengine
@@ -575,29 +567,22 @@ services:
     container_name: rtpengine-1
     hostname: rtpengine-1
     restart: unless-stopped
-    
-    # Network mode host para mejor rendimiento
     network_mode: host
-    
+    privileged: true
+
     volumes:
       - ./logs/rtpengine-1:/var/log/rtpengine
       - ./recordings:/var/spool/rtpengine
-      # Acceso al módulo kernel (crítico)
-      - /proc/rtpengine:/proc/rtpengine
-    
+
     environment:
       - RTPE_INTERFACE=${RTPE_INTERFACE:-eth0}
       - RTPE_LISTEN_NG=22222
-      - RTPE_TABLE=0
+      - RTPE_TABLE=-1
       - RTPE_PORT_MIN=10000
       - RTPE_PORT_MAX=15000
       - RTPE_LOG_LEVEL=6
       - TZ=${TZ:-America/Bogota}
-    
-    cap_add:
-      - NET_ADMIN
-      - SYS_NICE
-    
+
     logging:
       driver: "json-file"
       options:
@@ -610,27 +595,22 @@ services:
     container_name: rtpengine-2
     hostname: rtpengine-2
     restart: unless-stopped
-    
     network_mode: host
-    
+    privileged: true
+
     volumes:
       - ./logs/rtpengine-2:/var/log/rtpengine
       - ./recordings:/var/spool/rtpengine
-      - /proc/rtpengine:/proc/rtpengine
-    
+
     environment:
       - RTPE_INTERFACE=${RTPE_INTERFACE:-eth0}
       - RTPE_LISTEN_NG=22223
-      - RTPE_TABLE=1
+      - RTPE_TABLE=-1
       - RTPE_PORT_MIN=15001
       - RTPE_PORT_MAX=20000
       - RTPE_LOG_LEVEL=6
       - TZ=${TZ:-America/Bogota}
-    
-    cap_add:
-      - NET_ADMIN
-      - SYS_NICE
-    
+
     logging:
       driver: "json-file"
       options:
@@ -643,27 +623,22 @@ services:
     container_name: rtpengine-3
     hostname: rtpengine-3
     restart: unless-stopped
-    
     network_mode: host
-    
+    privileged: true
+
     volumes:
       - ./logs/rtpengine-3:/var/log/rtpengine
       - ./recordings:/var/spool/rtpengine
-      - /proc/rtpengine:/proc/rtpengine
-    
+
     environment:
       - RTPE_INTERFACE=${RTPE_INTERFACE:-eth0}
       - RTPE_LISTEN_NG=22224
-      - RTPE_TABLE=2
+      - RTPE_TABLE=-1
       - RTPE_PORT_MIN=20001
       - RTPE_PORT_MAX=25000
       - RTPE_LOG_LEVEL=6
       - TZ=${TZ:-America/Bogota}
-    
-    cap_add:
-      - NET_ADMIN
-      - SYS_NICE
-    
+
     logging:
       driver: "json-file"
       options:
@@ -724,22 +699,22 @@ services:
     container_name: kamailio
     hostname: kamailio
     restart: unless-stopped
-    
+
     network_mode: host
-    
+
     volumes:
       - ./config/kamailio.cfg:/etc/kamailio/kamailio.cfg:ro
       - ./logs/kamailio:/var/log/kamailio
-    
+
     environment:
       - KAMAILIO_LOG_LEVEL=3
       - TZ=${TZ}
-    
+
     depends_on:
       - rtpengine-1
       - rtpengine-2
       - mariadb
-    
+
     cap_add:
       - NET_ADMIN
       - NET_BIND_SERVICE
@@ -750,21 +725,20 @@ services:
     hostname: rtpengine-1
     restart: unless-stopped
     network_mode: host
-    
+
     volumes:
       - ./logs/rtpengine-1:/var/log/rtpengine
       - ./recordings:/var/spool/rtpengine
-      - /proc/rtpengine:/proc/rtpengine
-    
+
     environment:
       - RTPE_INTERFACE=${RTPE_INTERFACE}
       - RTPE_LISTEN_NG=22222
-      - RTPE_TABLE=0
+      - RTPE_TABLE=-1
       - RTPE_PORT_MIN=10000
       - RTPE_PORT_MAX=15000
       - RTPE_LOG_LEVEL=6
       - TZ=${TZ}
-    
+
     cap_add:
       - NET_ADMIN
       - SYS_NICE
@@ -775,21 +749,20 @@ services:
     hostname: rtpengine-2
     restart: unless-stopped
     network_mode: host
-    
+
     volumes:
       - ./logs/rtpengine-2:/var/log/rtpengine
       - ./recordings:/var/spool/rtpengine
-      - /proc/rtpengine:/proc/rtpengine
-    
+
     environment:
       - RTPE_INTERFACE=${RTPE_INTERFACE}
       - RTPE_LISTEN_NG=22223
-      - RTPE_TABLE=1
+      - RTPE_TABLE=-1
       - RTPE_PORT_MIN=15001
       - RTPE_PORT_MAX=20000
       - RTPE_LOG_LEVEL=6
       - TZ=${TZ}
-    
+
     cap_add:
       - NET_ADMIN
       - SYS_NICE
@@ -799,20 +772,20 @@ services:
     container_name: kamailio-db
     hostname: mariadb
     restart: unless-stopped
-    
+
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: kamailio
       MYSQL_USER: kamailio
       MYSQL_PASSWORD: ${DB_PASSWORD}
       TZ: ${TZ}
-    
+
     volumes:
       - mariadb_data:/var/lib/mysql
-    
+
     ports:
       - "3306:3306"
-    
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
