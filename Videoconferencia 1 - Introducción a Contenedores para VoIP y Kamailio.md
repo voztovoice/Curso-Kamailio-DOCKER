@@ -69,6 +69,9 @@ TZ=America/Bogota
 # Actualizar sistema
 sudo dnf update -y
 
+# Deshabilitar Selinux
+sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+
 # Reiniciar
 reboot
 
