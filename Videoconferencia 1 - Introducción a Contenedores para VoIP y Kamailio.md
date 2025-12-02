@@ -218,7 +218,7 @@ RUN git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio
     # Incluir modulos importantes
     make include_modules="db_mysql db_postgres tls websocket dmq presence presence_xml debugger htable pike \
                           dispatcher dialog nathelper rtpengine usrloc registrar auth auth_db \
-                          sanity textops siputils tm sl rr maxfwd jsonrpcs xlog corex" \
+                          sanity textops siputils tm sl rr maxfwd jsonrpcs xlog corex secsipid" \
     cfg && \
     make all && \
     make install && \
@@ -473,7 +473,13 @@ docker images mi-kamailio:6.0-optimized --format "{{.Size}}"
 
 **Archivo: `.env`**
 
+# IMPORTANTE: Este archivo contiene credenciales sensibles
+# - NO subir a repositorios Git (agregar a .gitignore)
+# - Usar permisos restrictivos: chmod 600 .env
+# - En produccion, usar secrets management (Docker Secrets, Vault)
+
 ```bash
+cat > .env <<EOF
 # Base de datos
 DB_ROOT_PASSWORD=SuperSecureRootPass123!
 DB_NAME=kamailio
@@ -482,16 +488,24 @@ DB_PASS=KamailioSecurePass456!
 
 # Kamailio
 KAMAILIO_LOG_LEVEL=3
-KAMAILIO_DOMAIN=sip1.kamailio.xyz
-KAMAILIO_EXTERNAL_IP=144.202.68.137
+KAMAILIO_DOMAIN=$HOSTNAME
+KAMAILIO_EXTERNAL_IP=$(curl -s ifconfig.me)
 
 # Timezone
 TZ=America/Bogota
 
-# Versiones
+# Versione
 KAMAILIO_VERSION=6.0
 MARIADB_VERSION=10.11
+EOF
+
+Luego:
+
+chmod 600 .env
+
 ```
+
+
 
 ### 4.2 Docker Compose Básico (Network Host Mode)
 
@@ -501,7 +515,6 @@ MARIADB_VERSION=10.11
 services:
   kamailio:
     image: mi-kamailio:6.0-optimized
-    command: ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
     container_name: kamailio-server
     hostname: kamailio
     restart: unless-stopped
