@@ -341,6 +341,14 @@ CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"
 ```
 #!KAMAILIO
 
+#!ifndef PUBLIC_IP
+#!define PUBLIC_IP "0.0.0.0"
+#!endif
+
+#!ifndef DOMAIN
+#!define DOMAIN "kamailio.local"
+#!endif
+
 ####### Global Parameters #########
 debug=3
 log_stderror=yes
@@ -352,11 +360,10 @@ children=4
 tcp_children=4
 
 # Escuchar en todas las interfaces
-listen=udp:0.0.0.0:5060
-listen=tcp:0.0.0.0:5060
+listen=udp:PUBLIC_IP:5060
 
 # Alias
-alias="kamailio.local"
+alias=DOMAIN
 
 ####### Modules Section ########
 mpath="/usr/local/lib64/kamailio/modules/"
