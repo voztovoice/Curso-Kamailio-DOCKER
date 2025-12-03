@@ -571,9 +571,13 @@ route[RELAY] {
 ```bash
 # Construccion básica
 docker build -f Dockerfile.kamailio -t mi-kamailio:6.0 .
+# Sin Cache
+docker build --no-cache -f Dockerfile.kamailio -t mi-kamailio:6.0 .
 
 # Construccion optimizada (RECOMENDADA)
 docker build -f Dockerfile.kamailio-optimized -t mi-kamailio:6.0-optimized .
+# Sin Cache
+docker build --no-cache -f Dockerfile.kamailio-optimized -t mi-kamailio:6.0-optimized .
 
 # Con argumentos personalizados
 docker build \
