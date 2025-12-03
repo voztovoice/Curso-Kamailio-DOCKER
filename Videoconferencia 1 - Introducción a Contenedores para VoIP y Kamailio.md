@@ -211,9 +211,9 @@ ARG KAMAILIO_BUILD=kamailio60
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-    # Compilación
+    # Compilacion
     gcc gcc-c++ make bison flex \
-    # Librerías
+    # Librerias
     openssl-devel libcurl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
@@ -249,9 +249,9 @@ RUN mkdir -p /etc/kamailio \
     /var/log/kamailio && \
     chown -R kamailio:kamailio /var/run/kamailio /var/log/kamailio
 
-# Copiar configuracion básica (sera reemplazada por volume)
-COPY config/kamailio.cfg /etc/kamailio/kamailio.cfg
-RUN chown kamailio:kamailio /etc/kamailio/kamailio.cfg
+# Copiar configuracion basica (sera reemplazada por volume)
+COPY config/kamailio-host.cfg /etc/kamailio/kamailio-host.cfg
+RUN chown kamailio:kamailio /etc/kamailio/kamailio-host.cfg
 
 # Exponer puertos
 EXPOSE 5060/udp 5060/tcp 5061/tcp 8080/tcp
@@ -277,18 +277,18 @@ CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"
 **Archivo: `Dockerfile.kamailio-optimized`**
 
 ```dockerfile
-# ETAPA 1: Compilación
+# ETAPA 1: Compilacion
 FROM almalinux:9 AS builder
 
 ARG KAMAILIO_VERSION=6.0
 
-# Instalar dependencias de compilación
+# Instalar dependencias de compilacion
 RUN dnf install -y epel-release && \
     dnf config-manager --set-enabled crb && \
     dnf install -y \
-    # Compilación
+    # Compilacion
     gcc gcc-c++ make bison flex \
-    # Librerías
+    # Librerias
     openssl-devel libcurl-devel \
     mysql-devel postgresql-devel \
     pcre-devel expat-devel \
@@ -350,11 +350,11 @@ USER kamailio
 CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
 ```
 
-### 3.4 Configuración básica de Kamailio
+### 3.4 Configuración básica de Kamailio, Host y Bridge
 
-**IMPORTANTE: Crear este archivo ANTES de construir las imágenes**
+**IMPORTANTE: Crear estos archivo ANTES de construir las imágenes**
 
-**Archivo: `config/kamailio.cfg` (simplificado para Docker)**
+**Archivo: `config/kamailio-host.cfg` (para modo Host)**
 
 ```
 #!KAMAILIO
@@ -377,7 +377,7 @@ log_facility=LOG_LOCAL0
 children=4
 tcp_children=4
 
-# Escuchar en todas las interfaces
+# Modo HOST: escuchar sobre la IP PUBLICA
 listen=udp:PUBLIC_IP:5060
 
 # Alias
@@ -406,47 +406,151 @@ loadmodule "cfg_rpc.so"
 
 ####### Routing Logic ########
 request_route {
-    
-    # Log inicial
-    xlog("L_INFO", "New $rm from $fu to $ru (IP:$si:$sp)\n");
-    
-    # Sanity checks
+
+    xlog("L_INFO", "========================================\n");
+    xlog("L_INFO", "[HOST MODE] Method: $rm | From: $fu | To: $ru\n");
+    xlog("L_INFO", "Source: $si:$sp | Received on: $Ri:$Rp\n");
+    xlog("L_INFO", "========================================\n");
+
     if (!sanity_check()) {
         xlog("L_WARN", "Malformed SIP message from $si:$sp\n");
         exit;
     }
-    
-    # Max-Forwards
+
     if (!mf_process_maxfwd_header("10")) {
         sl_send_reply("483", "Too Many Hops");
         exit;
     }
-    
-    # Record routing para dialogos
+
     if (is_method("INVITE|SUBSCRIBE")) {
         record_route();
     }
-    
-    # Handle requests dentro de dialogos
+
     if (has_totag()) {
         if (loose_route()) {
             route(RELAY);
             exit;
         }
     }
-    
-    # REGISTER requests
+
     if (is_method("REGISTER")) {
+        xlog("L_INFO", "Processing REGISTER for $fu\n");
         save("location");
         exit;
     }
-    
-    # Lookup location
+
     if (!lookup("location")) {
         sl_send_reply("404", "Not Found");
         exit;
     }
-    
+
+    route(RELAY);
+}
+
+route[RELAY] {
+    if (!t_relay()) {
+        sl_reply_error();
+    }
+    exit;
+}
+```
+
+**Archivo: `config/kamailio-bridge.cfg` (para modo Bridge)**
+
+```
+#!KAMAILIO
+
+####### Defines #######
+
+#!ifndef PRIVATE_IP
+#!define PRIVATE_IP "172.20.0.10"
+#!endif
+
+#!ifndef ADVERTISE_IP
+#!define ADVERTISE_IP "0.0.0.0"
+#!endif
+
+#!ifndef DOMAIN
+#!define DOMAIN "kamailio.local"
+#!endif
+
+####### Global Parameters #########
+debug=3
+log_stderror=yes
+memdbg=5
+memlog=5
+log_facility=LOG_LOCAL0
+
+children=4
+tcp_children=4
+
+# Modo BRIDGE: escuchar en IP interna y anunciar IP PUBLICA
+listen=udp:PRIVATE_IP:5060 advertise ADVERTISE_IP
+
+# Alias
+alias=DOMAIN
+
+####### Modules Section ########
+mpath="/usr/local/lib64/kamailio/modules/"
+
+loadmodule "jsonrpcs.so"
+loadmodule "kex.so"
+loadmodule "corex.so"
+loadmodule "tm.so"
+loadmodule "tmx.so"
+loadmodule "sl.so"
+loadmodule "rr.so"
+loadmodule "pv.so"
+loadmodule "maxfwd.so"
+loadmodule "usrloc.so"
+loadmodule "registrar.so"
+loadmodule "textops.so"
+loadmodule "siputils.so"
+loadmodule "xlog.so"
+loadmodule "sanity.so"
+loadmodule "ctl.so"
+loadmodule "cfg_rpc.so"
+
+####### Routing Logic ########
+request_route {
+
+    xlog("L_INFO", "========================================\n");
+    xlog("L_INFO", "[BRIDGE MODE] Method: $rm | From: $fu | To: $ru\n");
+    xlog("L_INFO", "Source: $si:$sp | Received on: $Ri:$Rp\n");
+    xlog("L_INFO", "========================================\n");
+
+    if (!sanity_check()) {
+        xlog("L_WARN", "Malformed SIP message from $si:$sp\n");
+        exit;
+    }
+
+    if (!mf_process_maxfwd_header("10")) {
+        sl_send_reply("483", "Too Many Hops");
+        exit;
+    }
+
+    if (is_method("INVITE|SUBSCRIBE")) {
+        record_route();
+    }
+
+    if (has_totag()) {
+        if (loose_route()) {
+            route(RELAY);
+            exit;
+        }
+    }
+
+    if (is_method("REGISTER")) {
+        xlog("L_INFO", "Processing REGISTER for $fu\n");
+        save("location");
+        exit;
+    }
+
+    if (!lookup("location")) {
+        sl_send_reply("404", "Not Found");
+        exit;
+    }
+
     route(RELAY);
 }
 
@@ -462,7 +566,7 @@ route[RELAY] {
 
 ### 3.5 Construir las imágenes
 
-**Ahora sí, con el kamailio.cfg ya creado, construimos:**
+**Ahora sí, con los archivos de configuración de Kamailio creados, construimos:**
 
 ```bash
 # Construccion básica
@@ -514,6 +618,7 @@ DB_PASS=KamailioSecurePass456!
 # Kamailio
 KAMAILIO_LOG_LEVEL=3
 KAMAILIO_DOMAIN=$HOSTNAME
+KAMAILIO_INTERNAL_IP=172.20.0.10
 KAMAILIO_EXTERNAL_IP=$(curl -s ifconfig.me)
 
 # Timezone
@@ -628,7 +733,7 @@ services:
       /usr/local/sbin/kamailio
       -DD
       -E
-      -A PUBLIC_IP=${KAMAILIO_EXTERNAL_IP}
+      -A PRIVATE_IP=${KAMAILIO_EXTERNAL_IP}
       -A DOMAIN=${KAMAILIO_DOMAIN}
       -f /etc/kamailio/kamailio.cfg
     container_name: kamailio-server
