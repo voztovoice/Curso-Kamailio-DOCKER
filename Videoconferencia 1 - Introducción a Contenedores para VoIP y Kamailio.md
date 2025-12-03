@@ -269,7 +269,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 USER kamailio
 
 # Comando por defecto
-CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
+CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio-host.cfg"]
 ```
 
 ### 3.3 Dockerfile Optimizado (Multi-stage build)
@@ -347,7 +347,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 
 USER kamailio
 
-CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio.cfg"]
+CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio-host.cfg"]
 ```
 
 ### 3.4 Configuración básica de Kamailio, Host y Bridge
