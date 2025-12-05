@@ -861,66 +861,20 @@ docker compose exec kamailio kamcmd stats.get_statistics all
 docker compose exec kamailio bash
 docker compose exec mariadb mysql -u kamailio -p${DB_PASS}
 
-# Ver usuarios registrados
+# Con usuario root
+docker compose exec -u root kamailio bash
+docker exec -it -u root kamailio-server bash
+
+# Ver usuarios registrados en Kamailio
 docker compose exec kamailio kamctl ul show
-```
 
----
-
-## PARTE 5: EJERCICIO PRÁCTICO (25 minutos)
-
-### Ejercicio 1: Desplegar Kamailio básico con Docker
-
-**Objetivo:** Levantar un servidor Kamailio containerizado con registro de usuarios
-
-**Resumen del flujo completo:**
-
-```bash
-# 1. Crear estructura
-mkdir -p ~/kamailio-docker/{config,logs,scripts}
-cd ~/kamailio-docker
-
-# 2. Crear archivos de configuración
-# - Crear config/kamailio.cfg (sección 3.4)
-# - Crear .env (sección 4.1)
-# - Crear Dockerfile.kamailio-optimized (sección 3.3)
-
-# 3. Construir imagen
-docker build -f Dockerfile.kamailio-optimized -t mi-kamailio:6.0-optimized .
-
-# 4. Crear docker-compose-bridge.yml (sección 4.3)
-
-# 5. Levantar servicios
-docker compose -f docker-compose-bridge.yml up -d
-
-# 6. Verificar logs
-docker compose -f docker-compose-bridge.yml logs -f
-```
-
-**Verificar funcionamiento:**
-
-```bash
 # Ver estadísticas de Kamailio
 docker compose -f docker-compose-bridge.yml exec kamailio kamctl fifo get_statistics all
 
-# Ver usuarios registrados
-docker compose -f docker-compose-bridge.yml exec kamailio kamctl ul show
-
-# Ver logs en tiempo real
-docker compose -f docker-compose-bridge.yml logs -f kamailio
-
-# Verificar conectividad a MariaDB
-docker compose -f docker-compose-bridge.yml exec mariadb mysql -u kamailio -p${DB_PASS} -e "SHOW DATABASES;"
 ```
 
-**Registrar un softphone:**
-- Configurar un softphone (Zoiper, Linphone, etc.)
-- Server: IP del host (144.202.68.137)
-- Puerto: 5060
-- Usuario: 1001@kamailio.local
-- Password: (sin autenticación por ahora)
-
-### Ejercicio 2: Agregar base de datos y autenticación
+---
+### Ejercicio 1: Agregar base de datos y autenticación
 
 **Objetivo:** Integrar MariaDB para persistencia de usuarios con autenticación
 
@@ -988,7 +942,7 @@ volumes:
   - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
 ```
 
-3. **Modificar kamailio.cfg para usar DB:**
+3. **Modificar configuración de Kamailio para usar DB:**
 
 ```
 # Agregar módulos de DB (después de los módulos existentes)
