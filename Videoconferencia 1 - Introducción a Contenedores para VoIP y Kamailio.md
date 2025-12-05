@@ -249,10 +249,6 @@ RUN mkdir -p /etc/kamailio \
     /var/log/kamailio && \
     chown -R kamailio:kamailio /var/run/kamailio /var/log/kamailio
 
-# Copiar configuracion basica (sera reemplazada por volume)
-COPY config/kamailio-host.cfg /etc/kamailio/kamailio-host.cfg
-RUN chown kamailio:kamailio /etc/kamailio/kamailio-host.cfg
-
 # Exponer puertos
 EXPOSE 5060/udp 5060/tcp 5061/tcp 8080/tcp
 
