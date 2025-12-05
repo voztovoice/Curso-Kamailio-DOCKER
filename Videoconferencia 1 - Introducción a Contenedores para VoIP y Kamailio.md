@@ -345,6 +345,19 @@ USER kamailio
 
 CMD ["/usr/local/sbin/kamailio", "-DD", "-E", "-f", "/etc/kamailio/kamailio-host.cfg"]
 ```
+**COMPARACIÓN DE AMBOS DOCKERFILES**
+
+| Aspecto | Dockerfile Básico | Dockerfile Optimizado |
+|---------|-------------------|----------------------|
+| **Etapas** | 1 (monolítica) | 2 (multi-stage) |
+| **Tamaño final** | ~800MB | ~400MB |
+| **Compiladores en imagen final** | ✅ Sí (innecesarios) | ❌ No |
+| **Código fuente en imagen** | ❌ Eliminado con rm -rf | ❌ Solo en builder |
+| **Librerías -devel** | ✅ Incluidas | ❌ Solo runtime |
+| **Complejidad** | Baja | Media |
+| **Velocidad de build** | Más rápido | Más lento |
+| **Seguridad** | Menos seguro (más software) | Más seguro (mínimo) |
+| **Mejor para** | Desarrollo/testing | Producción |
 
 ### 3.4 Configuración básica de Kamailio, Host y Bridge
 
